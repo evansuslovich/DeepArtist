@@ -77,6 +77,9 @@ def calculate_color_richness(colors, image):
 
 if __name__ == "__main__":
     archive = get_folders_in_folder('archive')
+    # Evan: Academic_Art, Art_Nouveau, Baroque, Expressionism, Japanese_Art, Neoclassicism, Primitivism,
+    # Sofie: Realism, Renaissance, Rococo, Symbolism, Western_Medieval, 
+
     for folder in archive:
         print(folder)
         folder_path = 'archive/' + folder + "/" + folder + "/"
@@ -112,7 +115,7 @@ if __name__ == "__main__":
                  ])
 
         files_in_folder = get_files_in_folder(folder_path)
-        for file_index in range(5):
+        for file_index in range(800):
             print(files_in_folder[file_index])
             image_path = folder_path + files_in_folder[file_index]
             image = Image.open(image_path).convert('RGB')
