@@ -48,7 +48,6 @@ def most_common_rgb(image_path):
 
 if __name__ == "__main__":
     archive = get_folders_in_folder('Archive')
-    archive.remove("Expressionism")
     for folder in archive:
         print(folder)
         folder_path = 'Archive/' + folder + "/" + folder + "/"

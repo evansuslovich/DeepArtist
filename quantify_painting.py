@@ -45,9 +45,10 @@ def calculate_color_richness(colors, image):
     return richness
 
 # Load an image using Pillow
-image_path = 'archive/Baroque/Baroque/186638.jpg'
-converted_image = np.array(Image.open(image_path)).reshape(-1, 3)
-image = Image.open(image_path)
+image_path = 'archive/Academic_Art/Academic_Art/9223372032559880657.jpg'
+image = Image.open(image_path).convert("RGB")
+print(image)
+converted_image = np.array(image).reshape(-1, 3)
 color_moments = calculate_color_moments(image)
 print("Color Moments:", color_moments)
 color_richness = calculate_color_richness(converted_image, image)
