@@ -25,6 +25,7 @@ print(csv_files)
 df_csv_concat = pd.concat([pd.read_csv(file) for file in csv_files ], ignore_index=True)
 
 
+
 #df_csv_concat.to_csv('art_test.csv')
 
 #print(df_csv_concat['Genre'].value_counts())
