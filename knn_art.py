@@ -21,7 +21,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Create a KNN classifier
-k = 5  # Number of neighbors to consider
+k = 50  # Number of neighbors to consider
 knn_classifier = KNeighborsClassifier(n_neighbors=k)
 
 # Train the classifier on the training data
