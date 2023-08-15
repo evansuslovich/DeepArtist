@@ -2,6 +2,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 
 # Load training data and testing data into pandas DataFrames
 train_data = pd.read_csv("art_train.csv")
@@ -21,15 +23,36 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Create a KNN classifier
-k = 50  # Number of neighbors to consider
-knn_classifier = KNeighborsClassifier(n_neighbors=k)
+scores = []
+for k in range(1, 51):
+    print(k)
+    knn_classifier = KNeighborsClassifier(n_neighbors=k)
+    knn_classifier.fit(X_train_scaled, y_train)
+    y_pred = knn_classifier.predict(X_test_scaled)
+    scores.append(accuracy_score(y_test, y_pred))
 
-# Train the classifier on the training data
-knn_classifier.fit(X_train_scaled, y_train)
 
-# Make predictions on the test data
-y_pred = knn_classifier.predict(X_test_scaled)
 
-# Calculate the accuracy of the classifier
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy:.2f}")
+param_grid = {
+    'n_neighbors': range(1, 50),
+    'weights': ['uniform', 'distance']
+}
+
+grid_search = GridSearchCV(KNeighborsClassifier(), param_grid, cv=10, scoring='accuracy')
+grid_search.fit(X_train_scaled, y_train)
+
+best_params = grid_search.best_params_
+best_accuracy = grid_search.best_score_
+
+print("Best Parameters:", best_params)
+print("Best Accuracy:", best_accuracy)
+
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, 51), scores, marker='o')
+plt.title('KNN Classifier Accuracy vs. Number of Neighbors (k)')
+plt.xlabel('Number of Neighbors (k)')
+plt.ylabel('Accuracy Score')
+plt.xticks(range(1, 51))
+plt.grid(True)
+plt.show()
+
