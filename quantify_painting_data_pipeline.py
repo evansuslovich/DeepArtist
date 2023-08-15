@@ -89,13 +89,23 @@ def generate_glcm(image):
 
 if __name__ == "__main__":
     archive = get_folders_in_folder('archive')
-    archive.remove("Expressionism")
+    archive.remove("Academic_Art")
+    archive.remove("Art_Nouveau")
+    archive.remove("Baroque")
+    archive.remove("Japanese_Art")
+    archive.remove("Neoclassicism")
+    archive.remove("Primitivism")
+    archive.remove("Realism")
+    archive.remove("Renaissance")
+    archive.remove("Rococo")
+    archive.remove("Symbolism")
+    archive.remove("Western_Medieval")
     # Evan: Academic_Art, Art_Nouveau, Baroque, Expressionism, Japanese_Art, Neoclassicism, Primitivism,
     # Sofie: Realism, Renaissance, Rococo, Symbolism, Western_Medieval, 
     for folder in archive:
         print(folder)
         folder_path = 'archive/' + folder + "/" + folder + "/"
-        with open("Test_Quantify/" + folder + "_GlCM_Data.csv", 'w', newline='') as f:
+        with open("Quantify_Data/" + folder + "_GlCM_Data.csv", 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(
                 ['Filename',
@@ -135,7 +145,7 @@ if __name__ == "__main__":
                  ])
 
         files_in_folder = get_files_in_folder(folder_path)
-        for file_index in range(801,1001):
+        for file_index in range(800):
             print(files_in_folder[file_index])
             image_path = folder_path + files_in_folder[file_index]
             image = Image.open(image_path).convert('L')  # Convert to grayscale
@@ -146,7 +156,7 @@ if __name__ == "__main__":
             # color_moments = calculate_color_moments(image)
             # color_richness = calculate_color_richness(converted_image, image)
             # color_palette = generate_color_palette(converted_image)
-            with open("Test_Quantify/" + folder + "_GlCM_Data.csv", 'a', newline='') as f:
+            with open("Quantify_Data/" + folder + "_GlCM_Data.csv", 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(
                     [

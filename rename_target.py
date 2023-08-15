@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+
 # def get_files_in_folder(folder_path):
 #     try:
 #         # Get a list of files and directories in the specified folder
@@ -38,12 +39,12 @@ import os
 # df_csv_concat['Genre'] = df_csv_concat['Genre'].map(dictionary)
 # df_csv_concat['Genre'] = df_csv_concat['Genre'].replace(dictionary)
 
+
+# art_test = pd.read_csv('art_test.csv')
+# art_train = pd.read_csv('art_train.csv')
+#
+#
+# art_test = art_test.drop(columns=art_test.columns[0])
+#art_test.to_csv("art_test.csv", index=False)
+
 #df_csv_concat.to_csv('art_test.csv')
-
-
-art_test = pd.read_csv('art_test.csv')
-art_train = pd.read_csv('art_train.csv')
-
-
-art_test = art_test.drop(columns=art_test.columns[0])
-art_test.to_csv("art_test.csv", index=False)

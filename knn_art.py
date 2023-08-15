@@ -7,9 +7,18 @@ from sklearn.model_selection import GridSearchCV
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
+art_train = pd.read_csv("art_train.csv")
+art_test = pd.read_csv("art_test.csv")
+
+art_train = art_train.drop(columns=art_train.columns[0])
+art_test = art_test.drop(columns=art_test.columns[0])
+
+#print(art_test.isnull().sum())
+
+
 # Load training data and testing data into pandas DataFrames
-train_data = pd.read_csv("art_train.csv")
-test_data = pd.read_csv("art_test.csv")
+train_data = art_train
+test_data = art_test
 
 # Split training data into features (X_train) and labels (y_train)
 X_train = train_data.drop(columns=["Filename"])
