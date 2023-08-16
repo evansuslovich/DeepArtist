@@ -45,20 +45,10 @@ art_test_GLCM_only = art_test.drop(columns=["Channel 1 Mean","Channel 1 Standard
 art_train_color_moments_only = art_train.drop(columns=["Color Palette 1 Red","Color Palette 1 Green","Color Palette 1 Blue","Color Palette 2 Red","Color Palette 2 Green","Color Palette 2 Blue","Color Palette 3 Red","Color Palette 3 Green","Color Palette 3 Blue","Color Palette 4 Red","Color Palette 4 Green","Color Palette 4 Blue","Color Palette 5 Red","Color Palette 5 Green","Color Palette 5 Blue", "0 Degrees","45 Degrees","90 Degrees","135 Degrees","180 Degrees","225 Degrees","270 Degrees","315 Degrees"])
 art_test_color_moments_only = art_test.drop(columns=["Color Palette 1 Red","Color Palette 1 Green","Color Palette 1 Blue","Color Palette 2 Red","Color Palette 2 Green","Color Palette 2 Blue","Color Palette 3 Red","Color Palette 3 Green","Color Palette 3 Blue","Color Palette 4 Red","Color Palette 4 Green","Color Palette 4 Blue","Color Palette 5 Red","Color Palette 5 Green","Color Palette 5 Blue", "0 Degrees","45 Degrees","90 Degrees","135 Degrees","180 Degrees","225 Degrees","270 Degrees","315 Degrees"])
 
-columns_to_select = ["Color Richness", "Genre"]
-art_train_color_richness_only = art_train[columns_to_select].copy()
-art_test_color_richness_only = art_test[columns_to_select].copy()
-
-
-columns_to_select = ["0 Degrees", "Genre"]
-
-bullshit_train = art_train[columns_to_select].copy()
-bullshit_test = art_test[columns_to_select].copy()
-
 
 # Load training data and testing data into pandas DataFrames
-train_data = bullshit_train
-test_data = bullshit_test
+train_data = art_train_color_moments_only
+test_data = art_test_color_moments_only
 
 # Split training data into features (X_train) and labels (y_train)
 X_train = train_data
