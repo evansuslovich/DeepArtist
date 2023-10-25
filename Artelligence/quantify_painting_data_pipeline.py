@@ -89,19 +89,6 @@ def generate_glcm(image):
 
 if __name__ == "__main__":
     archive = get_folders_in_folder('archive')
-    archive.remove("Academic_Art")
-    archive.remove("Art_Nouveau")
-    archive.remove("Baroque")
-    archive.remove("Japanese_Art")
-    archive.remove("Neoclassicism")
-    archive.remove("Primitivism")
-    archive.remove("Realism")
-    archive.remove("Renaissance")
-    archive.remove("Rococo")
-    archive.remove("Symbolism")
-    archive.remove("Western_Medieval")
-    # Evan: Academic_Art, Art_Nouveau, Baroque, Expressionism, Japanese_Art, Neoclassicism, Primitivism,
-    # Sofie: Realism, Renaissance, Rococo, Symbolism, Western_Medieval, 
     for folder in archive:
         print(folder)
         folder_path = 'archive/' + folder + "/" + folder + "/"
@@ -117,31 +104,31 @@ if __name__ == "__main__":
                  '225 Degrees',
                  '270 Degrees',
                  '315 Degrees',
-                 # 'Channel 1 Mean',
-                 # 'Channel 1 Standard Deviation',
-                 # 'Channel 1 Skewness',
-                 # 'Channel 2 Mean',
-                 # 'Channel 2 Standard Deviation',
-                 # 'Channel 2 Skewness',
-                 # 'Channel 3 Mean',
-                 # 'Channel 3 Standard Deviation',
-                 # 'Channel 3 Skewness',
-                 # 'Color Richness',
-                 # 'Color Palette 1 Red',
-                 # 'Color Palette 1 Green',
-                 # 'Color Palette 1 Blue',
-                 # 'Color Palette 2 Red',
-                 # 'Color Palette 2 Green',
-                 # 'Color Palette 2 Blue',
-                 # 'Color Palette 3 Red',
-                 # 'Color Palette 3 Green',
-                 # 'Color Palette 3 Blue',
-                 # 'Color Palette 4 Red',
-                 # 'Color Palette 4 Green',
-                 # 'Color Palette 4 Blue',
-                 # 'Color Palette 5 Red',
-                 # 'Color Palette 5 Green',
-                 # 'Color Palette 5 Blue',
+                 'Channel 1 Mean',
+                 'Channel 1 Standard Deviation',
+                 'Channel 1 Skewness',
+                 'Channel 2 Mean',
+                 'Channel 2 Standard Deviation',
+                 'Channel 2 Skewness',
+                 'Channel 3 Mean',
+                 'Channel 3 Standard Deviation',
+                 'Channel 3 Skewness',
+                 'Color Richness',
+                 'Color Palette 1 Red',
+                 'Color Palette 1 Green',
+                 'Color Palette 1 Blue',
+                 'Color Palette 2 Red',
+                 'Color Palette 2 Green',
+                 'Color Palette 2 Blue',
+                 'Color Palette 3 Red',
+                 'Color Palette 3 Green',
+                 'Color Palette 3 Blue',
+                 'Color Palette 4 Red',
+                 'Color Palette 4 Green',
+                 'Color Palette 4 Blue',
+                 'Color Palette 5 Red',
+                 'Color Palette 5 Green',
+                 'Color Palette 5 Blue',
                  ])
 
         files_in_folder = get_files_in_folder(folder_path)
@@ -151,11 +138,11 @@ if __name__ == "__main__":
             image = Image.open(image_path).convert('L')  # Convert to grayscale
             image_array = np.array(image)
             glcm = generate_glcm(image_array)
-            # image = Image.open(image_path).convert('RGB')
-            # converted_image = np.array(image).reshape(-1, 3)
-            # color_moments = calculate_color_moments(image)
-            # color_richness = calculate_color_richness(converted_image, image)
-            # color_palette = generate_color_palette(converted_image)
+            image = Image.open(image_path).convert('RGB')
+            converted_image = np.array(image).reshape(-1, 3)
+            color_moments = calculate_color_moments(image)
+            color_richness = calculate_color_richness(converted_image, image)
+            color_palette = generate_color_palette(converted_image)
             with open("Quantify_Data/" + folder + "_GlCM_Data.csv", 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(
@@ -168,15 +155,16 @@ if __name__ == "__main__":
                         glcm[4],
                         glcm[5],
                         glcm[6],
-                        glcm[7]
-                        # color_moments[0], color_moments[1], color_moments[2],
-                        # color_moments[3], color_moments[4], color_moments[5],
-                        # color_moments[6], color_moments[7], color_moments[8],
-                        # color_richness,
-                        # color_palette[0][0], color_palette[0][1], color_palette[0][2],
-                        # color_palette[1][0], color_palette[1][1], color_palette[1][2],
-                        # color_palette[2][0], color_palette[2][1], color_palette[2][2],
-                        # color_palette[3][0], color_palette[3][1], color_palette[3][2],
-                        # color_palette[4][0], color_palette[4][1], color_palette[4][2],
+                        glcm[7],
+                        color_moments[0], color_moments[1], color_moments[2],
+                        color_moments[3], color_moments[4], color_moments[5],
+                        color_moments[6], color_moments[7], color_moments[8],
+                        color_richness,
+                        color_palette[0][0], color_palette[0][1], color_palette[0][2],
+                        color_palette[1][0], color_palette[1][1], color_palette[1][2],
+                        color_palette[2][0], color_palette[2][1], color_palette[2][2],
+                        color_palette[3][0], color_palette[3][1], color_palette[3][2],
+                        color_palette[4][0], color_palette[4][1], color_palette[4][2]
+                
                     ]
                 )
