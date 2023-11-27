@@ -42,6 +42,8 @@ class LabeledImageDataset(ImageFolder):
         return label_map
 
 
+
+
 transform = transforms.Compose([
     transforms.ToImage(),
     transforms.Resize((224, 224), antialias=True),  # Explicitly set antialias to True
@@ -50,11 +52,20 @@ transform = transforms.Compose([
 ])
 
 
-def split_dataset(dataset, val_split=0.25):
-    train_idx, val_idx = train_test_split(list(range(len(dataset))), test_size=val_split)
+def split_dataset(dataset, train_proportion=0.8, validate_size=0.1):
+    indices = list(range(len(dataset)))
+    train_idx, posttrain_idx = train_test_split(indices, test_size=train_proportion)
+    posttrain_dataset = Subset(dataset, posttrain_idx)
+
+    indices = list(range(len(posttrain_dataset)))
+
+    validate_idx, test_idx = train_test_split(indices, test_size=validate_size / (1 - train_proportion))
+
     datasets = {}
     datasets['train'] = Subset(dataset, train_idx)
-    datasets['val'] = Subset(dataset, val_idx)
+    datasets['validation'] = Subset(posttrain_dataset, validate_idx)
+    datasets['test'] = Subset(posttrain_dataset, test_idx)
+
     return datasets
 
 
@@ -62,10 +73,13 @@ def load(root_dir: str, batch_size: int = 100):
 
     dataset = LabeledImageDataset(root_dir=root_dir, transform=transform)
 
-    print(dataset.labels())
-    print(dataset.label_map())
+    label_map = dataset.label_map()
 
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+    datatests = split_dataset(dataset)
+
+    print(datatests['train'].targets())
 
     return loader
 
