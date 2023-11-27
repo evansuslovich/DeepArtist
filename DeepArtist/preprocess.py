@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import torch
 import torchvision.transforms.v2 as transforms
 from torchvision.datasets import ImageFolder
@@ -18,11 +20,11 @@ def load(root: str) -> None:
 
     dataset = ImageFolder(root=root, transform=transform)
 
-
+    return dataset
 
 
 
 if __name__ == '__main__':
-    
+
     dataset = load(ROOT)
     print(dataset)
