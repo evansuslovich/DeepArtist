@@ -16,16 +16,30 @@ class LabeledImageDataset(ImageFolder):
 
     def __init__(self, root_dir: str, transform) -> None:
         super().__init__(root_dir, transform)
-    
+
+
     def labels(self) -> list[str]:
         return self.targets
+
+
+    def length(self) -> int:
+        return len(self.labels())
+
 
     def label_map(self) -> list[str]:
 
         def extract_label(label_tuple: str) -> str:
             return os.path.basename(os.path.dirname(label_tuple[0]))
+        
+        ungrouped_labels = map(extract_label, self.imgs)
 
-        return list(map(extract_label, self.imgs))
+        label_map = []
+
+        for label in ungrouped_labels:
+            if label not in label_map:
+                label_map.append(label)
+        
+        return label_map
 
 
 transform = transforms.Compose([
