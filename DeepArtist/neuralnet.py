@@ -34,10 +34,10 @@ PART 2:
 Load the dataset. Make sure to utilize the transform and batch_size you wrote in the last section.
 '''
 
-trainset = ImageFolder(root='./DeepArtist', transform=transform)
+trainset = ImageFolder(root='./Data/', transform=transform)
 trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
 
-testset = ImageFolder(root='./DeepArtist', transform=transform)
+testset = ImageFolder(root='./Data/', transform=transform)
 testloader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
 
