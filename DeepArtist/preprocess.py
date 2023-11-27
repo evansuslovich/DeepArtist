@@ -23,7 +23,6 @@ def load(root: str) -> None:
     return dataset
 
 
-
 if __name__ == '__main__':
 
     dataset = load(ROOT)
