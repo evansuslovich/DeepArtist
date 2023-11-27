@@ -82,6 +82,7 @@ num_epochs = 5
 losses = []  
 
 for epoch in range(num_epochs):
+    print("EPOCH:", epoch)
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         inputs, labels = data
