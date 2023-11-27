@@ -75,6 +75,7 @@ DATA_ROOT = './Data'
 
 transform = transforms.Compose([
     transforms.ToImage(),
+    transforms.Resize((6, 6), antialias=True),
     transforms.ToDtype(torch.float32, scale=True),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
@@ -84,18 +85,19 @@ def load_artelligence_data(batch_size: int=100,
                            train_split: float=0.8,
                            validate_split: float=0.1,
                            random_seed: int=None):
+    '''
+    Loads the dataset, splits it into train, validate, and test subsets, then creats loaders with
+    the given batch size. Returns a tuple containing the three subset loaders followed by a map of
+    target values to label strings.
+    '''
     
     dataset = LabeledImageDataset(root_dir=DATA_ROOT, transform=transform)
     label_map = dataset.label_map()
-
-    print(len(dataset))
 
     train_dataset, validate_dataset, test_dataset = split_dataset(dataset,
                                                                   train_split,
                                                                   validate_split,
                                                                   random_seed)
-    
-    print(len(train_dataset))
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
     validate_loader = DataLoader(validate_dataset, batch_size=batch_size, shuffle=False)
@@ -110,10 +112,13 @@ if __name__ == '__main__':
         validate_loader,
         test_loader,
         label_map
-    ) = load_artelligence_data(batch_size=100, train_split=0.8, validate_split=0.1, random_seed=1)
+    ) = load_artelligence_data(batch_size=100, train_split=0.8, validate_split=0.1, random_seed=2)
 
+    for data in train_loader:
+        print(data)
 
-    print(len(train_loader))
-    print(len(validate_loader))
-    print(len(test_loader))
-    print(label_map)
+    for data in validate_loader:
+        print(data)
+
+    for data in test_loader:
+        print(data)
