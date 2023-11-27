@@ -53,7 +53,6 @@ def load(root_dir: str, batch_size: int = 100):
 
     return loader
 
-
 if __name__ == '__main__':
 
     loader = load(ROOT)
