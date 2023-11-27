@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+from collections import OrderedDict
 import torch
 import torchvision.transforms.v2 as transforms
 from torchvision.datasets import ImageFolder
@@ -20,8 +22,8 @@ class LabeledImageDataset(ImageFolder):
 
     def label_map(self) -> list[str]:
 
-        def extract_label(path: str) -> str:
-            return path
+        def extract_label(label_tuple: str) -> str:
+            return os.path.basename(os.path.dirname(label_tuple[0]))
 
         return list(map(extract_label, self.imgs))
 
