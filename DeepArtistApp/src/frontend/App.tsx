@@ -4,8 +4,19 @@ import './App.css';
 
 const App: React.FC = () => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Do something with the dropped files
-    console.log('Dropped files:', acceptedFiles);
+    const file = acceptedFiles[0];
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Send the file to the Flask server using fetch or Axios
+    fetch('http://localhost:5000/upload', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error('Error uploading file:', error));
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -17,9 +28,7 @@ const App: React.FC = () => {
           <input {...getInputProps()} />
           {isDragActive ? <p>Drop the files here...</p> : <p>Drag a file here, or click to select one</p>}
         </div>
-        <p>
-          Hi there! Welcome to DeepArtist
-        </p>
+        <p>Hi there! Welcome to DeepArtist.</p>
       </header>
     </div>
   );
