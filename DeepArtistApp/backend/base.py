@@ -16,21 +16,27 @@ def allowed_file(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    # Check if the POST request has a file part
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
+    print(request.data)
+    print(request.form)
+    print(request)
 
-    file = request.files['file']
+    return jsonify({'message': 'File Uploaded Succesfully'})
+    # # Check if the POST request has a file part
+    # if 'file' not in request.files:
+    #     return jsonify({'error': 'No file part'})
 
-    # Check if the file is allowed and not empty
-    if file.filename == '' or not allowed_file(file.filename):
-        return jsonify({'error': 'Invalid file'})
+    # file = request.files['file']
 
-    # Save the file to the upload folder
-    if file:
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filename)
-        return jsonify({'message': 'File uploaded successfully'})
+    # # Check if the file is allowed and not empty
+    # if file.filename == '' or not allowed_file(file.filename):
+    #     return jsonify({'error': 'Invalid file'})
+
+    # # Save the file to the upload folder
+    # if file:
+    #     filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    #     file.save(filename)
+    #     return jsonify({'message': 'File uploaded successfully'})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
