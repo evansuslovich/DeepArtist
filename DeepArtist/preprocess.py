@@ -10,33 +10,6 @@ from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
 
 
-class LabeledImageDataset(ImageFolder):
-
-    def __init__(self, root_dir: str, transform) -> None:
-        super().__init__(root_dir, transform)
-    
-
-    def label_map(self) -> list[str]:
-        '''
-        Returns a list of the label (target) name strings originating from the directory name the
-        images were stored in. This computes the list upon each call so this should be called once
-        and the result should be stored.
-        '''
-
-        def extract_label(label_tuple: str) -> str:
-            return os.path.basename(os.path.dirname(label_tuple[0]))
-        
-        ungrouped_labels = map(extract_label, self.imgs)
-
-        label_map = []
-
-        for label in ungrouped_labels:
-            if label not in label_map:
-                label_map.append(label)
-        
-        return label_map
-
-
 def split_dataset(dataset,
                   train_split: float=0.8,
                   validate_split: float=0.1,
@@ -91,8 +64,7 @@ def load_artelligence_data(batch_size: int=100,
     target values to label strings.
     '''
     
-    dataset = LabeledImageDataset(root_dir=DATA_ROOT, transform=transform)
-    label_map = dataset.label_map()
+    dataset = ImageFolder(root=DATA_ROOT, transform=transform)
 
     train_dataset, validate_dataset, test_dataset = split_dataset(dataset,
                                                                   train_split,
@@ -103,7 +75,7 @@ def load_artelligence_data(batch_size: int=100,
     validate_loader = DataLoader(validate_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, validate_loader, test_loader, label_map
+    return train_loader, validate_loader, test_loader, dataset.classes
 
 
 if __name__ == '__main__':
@@ -114,11 +86,4 @@ if __name__ == '__main__':
         label_map
     ) = load_artelligence_data(batch_size=100, train_split=0.8, validate_split=0.1, random_seed=2)
 
-    for data in train_loader:
-        print(data)
-
-    for data in validate_loader:
-        print(data)
-
-    for data in test_loader:
-        print(data)
+    print(label_map)
