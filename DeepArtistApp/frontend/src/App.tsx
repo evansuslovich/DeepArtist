@@ -26,11 +26,14 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
-          <input {...getInputProps()} />
-          {isDragActive ? <p>Drop the files here...</p> : <p>Drag a file here, or click to select one</p>}
-        </div>
+        
         <p>Hi there! Welcome to DeepArtist.</p>
+
+        {/* Input an Image */}
+        <div className="dropFile" {...getRootProps()}>
+          <input {...getInputProps()}/>
+          {<p>Drag a file here, or click to select one</p>}
+        </div>
       </header>
     </div>
   );

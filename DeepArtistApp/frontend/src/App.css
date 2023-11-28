@@ -36,3 +36,8 @@
     transform: rotate(360deg);
   }
 }
+
+.dropFile {
+  background-color: rgb(98, 55, 55);
+  padding: 100px;
+}

@@ -7,7 +7,6 @@ import torchvision.transforms.v2 as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 CORS(app)
@@ -120,7 +119,7 @@ try:
     # net.to(device)
     print("Model Loaded from './model_training.pth'")
     evaluate_model()
-except Exception as  e: 
+except Exception as e: 
     print(e)
     print("Training Model")
     train_model()
