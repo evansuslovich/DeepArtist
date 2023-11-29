@@ -36,6 +36,7 @@ idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
     test_loader, test_size
 ) = idm.split_loaders(train_split=0.8, validate_split=0.1, batch_size=BATCH_SIZE, random_seed=1)
 
+print(f"SIZES: (train={train_size}, validate={validate_size}, test={test_size})")
 
 class Net(nn.Module):
 
