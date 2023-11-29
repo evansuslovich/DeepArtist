@@ -7,9 +7,23 @@ import torchvision.transforms.v2 as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)
+
+output_mapping = {
+    0: "T-shirt/Top",
+    1: "Trouser",
+    2: "Pullover",
+    3: "Dress",
+    4: "Coat",
+    5: "Sandal",
+    6: "Shirt",
+    7: "Sneaker",
+    8: "Bag",
+    9: "Ankle Boot"
+}
 
 # Specify the upload folder
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -23,6 +37,8 @@ def allowed_file(filename):
 @app.route('/upload', methods=['POST'])
 def upload_file():
 
+    print("Reached upload_file route")  # Add debug statement
+
     # Check if the POST request has a file part
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
@@ -33,6 +49,28 @@ def upload_file():
     if file.filename == '' or not allowed_file(file.filename):
         return jsonify({'error': 'Invalid file'})
 
+    if file:
+        # Save the uploaded image
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filename)
+
+        # Open and preprocess the image for prediction
+        image = Image.open(filename)
+        image = transform(image)
+        image = image.unsqueeze(0)  # Add batch dimension
+
+        # Make prediction
+        with torch.no_grad():
+            output = net(image)
+            _, predicted = torch.max(output.data, 1)
+        
+        # Convert the predicted index to a class label
+        class_label = str(predicted.item())
+
+        return jsonify({'prediction': output_mapping[int(class_label)]})
+
+    else:
+        return jsonify({'error': 'Error'})
 
 # PART 1: Preprocess the fashion mnist dataset and determine a good batch size for the dataset.
 transform = transforms.Compose([
