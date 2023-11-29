@@ -111,8 +111,11 @@ class ImageDataManager(object):
 
         return (
             DataLoader(train_dataset, batch_size=batch_size, shuffle=False),
+            len(train_dataset),
             DataLoader(validate_dataset, batch_size=batch_size, shuffle=False),
-            DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+            len(validate_dataset),
+            DataLoader(test_dataset, batch_size=batch_size, shuffle=False),
+            len(test_dataset)
         )
 
 
