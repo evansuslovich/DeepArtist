@@ -101,9 +101,8 @@ class ImageDataManager(object):
                      batch_size: int=100,
                      random_seed: int=None):
         '''
-        Loads the dataset, splits it into train, validate, and test subsets, then creats loaders with
-        the given batch size. Returns a tuple containing the three subset loaders followed by a map of
-        target values to label strings.
+        Loads the dataset, splits it into train, validate, and test subsets, then creats loaders
+        with  the given batch size. Returns a tuple containing the three subset loaders.
         '''
 
         train_dataset, validate_dataset, test_dataset = self.split_dataset(train_split,
