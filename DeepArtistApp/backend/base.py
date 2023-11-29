@@ -37,8 +37,6 @@ def allowed_file(filename):
 @app.route('/upload', methods=['POST'])
 def upload_file():
 
-    print("Reached upload_file route")  # Add debug statement
-
     # Check if the POST request has a file part
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
