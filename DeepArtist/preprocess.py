@@ -77,14 +77,14 @@ class ImageDataManager(object):
 
         dataset_all_indices = list(range(len(self._dataset)))
         train_idx, posttrain_idx = train_test_split(dataset_all_indices, 
-                                                    test_size=train_split,
+                                                    test_size=1 - train_split,
                                                     shuffle=True,
                                                     random_state=random_seed)
         
         posttrain_dataset = Subset(self._dataset, posttrain_idx)
         posttrain_all_indices = list(range(len(posttrain_dataset)))
         validate_idx, test_idx = train_test_split(posttrain_all_indices,
-                                                test_size=validate_split / (1 - train_split),
+                                                test_size=1 - (validate_split / (1 - train_split)),
                                                 shuffle=True,
                                                 random_state=random_seed)
 

@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from preprocess import ImageDataManager
 
 '''
 In this file you will write end-to-end code to train a neural network to categorize fashion-mnist data
@@ -27,18 +28,19 @@ transform = transforms.Compose([
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Adjust if images are grayscale
 ])
 
-batch_size = 64
-
 '''
 PART 2:
 Load the dataset. Make sure to utilize the transform and batch_size you wrote in the last section.
 '''
 
-trainset = ImageFolder(root='./Data/', transform=transform)
-trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
+BATCH_SIZE = 64
+SQUARE_IMAGE_SIZE = 100
 
-testset = ImageFolder(root='./Data/', transform=transform)
-testloader = DataLoader(testset, batch_size=batch_size, shuffle=False)
+idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
+
+(
+    train_loader, validate_loader, test_loader
+) = idm.split_loaders(train_split=0.8, validate_split=0.1, batch_size=BATCH_SIZE, random_seed=1)
 
 
 '''
@@ -50,15 +52,22 @@ Do not directly import or copy any existing models.
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(3 * 224 * 224, 512)
-        self.fc2 = nn.Linear(512, 128)
-        self.fc3 = nn.Linear(128, 10)
+        self.fc1 = nn.Linear(SQUARE_IMAGE_SIZE ** 2, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 10)
 
+    # bias terms: 
+    # ((784 * 512) + 512) + ((512 * 256)  + 256) + ((256 * 10) + 10)
     def forward(self, x):
-        x = x.view(x.size(0), -1)  # Flatten the input
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        print(1, len(x))
+        x = nn.Flatten()(x) # Flatten the input
+        print(2, len(x))
+        x = F.relu(self.fc1(x)) # run through relu
+        print(3, len(x))
+        x = F.relu(self.fc2(x)) # run through relu 
+        print(4, len(x))
+        x = F.relu(self.fc3(x))
+        print(5, len(x))
         return x
 
 net = Net()
@@ -84,16 +93,18 @@ losses = []
 for epoch in range(num_epochs):
     print("EPOCH:", epoch)
     running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
+    for i, data in enumerate(train_loader, 0):
         inputs, labels = data
+        print(len(inputs), len(labels))
         optimizer.zero_grad()
         outputs = net(inputs)
+        print(len(outputs), len(labels))
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
 
-    epoch_loss = running_loss / len(trainloader)
+    epoch_loss = running_loss / len(train_loader)
     print(f"Epoch {epoch+1}, Training loss: {epoch_loss}")
     losses.append(epoch_loss) 
 
@@ -113,7 +124,7 @@ wrongImage = None
 correct = 0
 total = 0
 with torch.no_grad():
-    for data in testloader:
+    for data in train_loader:
         images, labels = data
         outputs = net(images)
         _, predicted = torch.max(outputs.data, 1)
