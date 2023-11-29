@@ -97,10 +97,15 @@ class Net(nn.Module):
     # bias terms: 
     # ((784 * 512) + 512) + ((512 * 256)  + 256) + ((256 * 10) + 10)
     def forward(self, x):
+        print(1, x.size)
         x = x.view(-1, 28 * 28)  # Flatten the input
+        print(2, len(x))
         x = F.relu(self.fc1(x)) # run through relu 
+        print(3, len(x))
         x = F.relu(self.fc2(x)) # run through relu 
+        print(4, len(x))
         x = self.fc3(x)
+        print(5, len(x))
         return x
 
 net = Net()

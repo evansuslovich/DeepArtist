@@ -49,25 +49,34 @@ Design a multi layer perceptron. Since this is a purely Feedforward network, you
 Do not directly import or copy any existing models.
 '''
 
+
+# define CNN for a 3-class problem with input size 160x160 images
 class Net(nn.Module):
+
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(SQUARE_IMAGE_SIZE ** 2, 512)
+        self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
+        self.conv4 = nn.Conv2d(64, 128, 3, padding=1)
+        self.conv5 = nn.Conv2d(128, 256, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(256 * 3 * 3, 512)
         self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 10)
-
-    # bias terms: 
-    # ((784 * 512) + 512) + ((512 * 256)  + 256) + ((256 * 10) + 10)
+        self.fc3 = nn.Linear(256, 5)
+        self.relu = nn.ReLU()
+        self.final_activation = nn.LogSoftmax(dim=1)
+    
     def forward(self, x):
-        print(1, len(x))
-        x = nn.Flatten()(x) # Flatten the input
-        print(2, len(x))
-        x = F.relu(self.fc1(x)) # run through relu
-        print(3, len(x))
-        x = F.relu(self.fc2(x)) # run through relu 
-        print(4, len(x))
-        x = F.relu(self.fc3(x))
-        print(5, len(x))
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.relu(self.conv3(x)))
+        x = self.pool(self.relu(self.conv4(x)))
+        x = self.pool(self.relu(self.conv5(x)))
+        x = x.view(-1, 256 * 3 * 3)
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.final_activation(self.fc3(x))
         return x
 
 net = Net()
