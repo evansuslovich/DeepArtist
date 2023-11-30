@@ -48,7 +48,7 @@ const App: React.FC = () => {
             <img
               src={URL.createObjectURL(selectedImage)}
               alt="Selected"
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '300px', height: 'auto' }}
             />
           </div>
         )}
