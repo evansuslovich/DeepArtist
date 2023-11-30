@@ -17,13 +17,6 @@ else:
 
 print("Device:", device)
 
-transform = transforms.Compose([
-    transforms.ToImage(),
-    transforms.Resize((224, 224), antialias=True),  # Explicitly set antialias to True
-    transforms.ToDtype(torch.float32, scale=True),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Adjust if images are grayscale
-])
-
 
 BATCH_SIZE = 64
 SQUARE_IMAGE_SIZE = 100
@@ -70,10 +63,10 @@ net = Net()
 net = net.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.001)
+optimizer = optim.Adam(net.parameters(), lr=0.0005)
 
 
-num_epochs = 5
+num_epochs = 15
 losses = []
 
 for epoch in range(num_epochs):

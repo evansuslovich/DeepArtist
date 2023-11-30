@@ -8,22 +8,21 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from PIL import Image
+from preprocess import ImageDataManager
 
 app = Flask(__name__)
 CORS(app)
 
-output_mapping = {
-    0: "T-shirt/Top",
-    1: "Trouser",
-    2: "Pullover",
-    3: "Dress",
-    4: "Coat",
-    5: "Sandal",
-    6: "Shirt",
-    7: "Sneaker",
-    8: "Bag",
-    9: "Ankle Boot"
-}
+SQUARE_IMAGE_SIZE = 100
+BATCH_SIZE = 64
+
+idm = ImageDataManager(data_root='../../DeepArtist/Data', square_image_size=SQUARE_IMAGE_SIZE)
+
+(
+    train_loader, train_size,
+    validate_loader, validate_size,
+    test_loader, test_size
+) = idm.split_loaders(train_split=0.8, validate_split=0.1, batch_size=BATCH_SIZE, random_seed=1)
 
 # Specify the upload folder
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -54,7 +53,7 @@ def upload_file():
 
         # Open and preprocess the image for prediction
         image = Image.open(filename)
-        image = transform(image)
+        image = idm.transform(image)
         image = image.unsqueeze(0)  # Add batch dimension
 
         # Make prediction
@@ -65,47 +64,37 @@ def upload_file():
         # Convert the predicted index to a class label
         class_label = str(predicted.item())
 
-        return jsonify({'prediction': output_mapping[int(class_label)]})
+        return jsonify({'prediction': idm.label_map()[int(class_label)]})
 
     else:
         return jsonify({'error': 'Error'})
 
-# PART 1: Preprocess the fashion mnist dataset and determine a good batch size for the dataset.
-transform = transforms.Compose([
-    transforms.ToImage(),
-    transforms.ToDtype(torch.float32, scale=True),
-    transforms.Grayscale(1), # Merge all 3 channels (that should already be equal) to grayscale using mean.
-    transforms.Normalize(torch.tensor([0]), torch.tensor([0.5]))
-])
-batch_size = 64
-
-# PART 2: Load the dataset. Make sure to utilize the transform and batch_size.
-trainset = torchvision.datasets.FashionMNIST(root='./data', train=True, download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
-
-testset = torchvision.datasets.FashionMNIST(root='./data', train=False, download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False)
-
-# PART 3: Design a multi-layer perceptron.
 class Net(nn.Module):
+
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(784, 512)
+        self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
+        self.conv4 = nn.Conv2d(64, 128, 3, padding=1)
+        self.conv5 = nn.Conv2d(128, 256, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(256 * 3 * 3, 512)
         self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 10)
+        self.fc3 = nn.Linear(256, 5)
+        self.relu = nn.ReLU()
+        self.final_activation = nn.LogSoftmax(dim=1)
 
-    # bias terms: 
-    # ((784 * 512) + 512) + ((512 * 256)  + 256) + ((256 * 10) + 10)
     def forward(self, x):
-        print(1, x.size)
-        x = x.view(-1, 28 * 28)  # Flatten the input
-        print(2, len(x))
-        x = F.relu(self.fc1(x)) # run through relu 
-        print(3, len(x))
-        x = F.relu(self.fc2(x)) # run through relu 
-        print(4, len(x))
-        x = self.fc3(x)
-        print(5, len(x))
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.relu(self.conv3(x)))
+        x = self.pool(self.relu(self.conv4(x)))
+        x = self.pool(self.relu(self.conv5(x)))
+        x = x.view(-1, 256 * 3 * 3)
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.final_activation(self.fc3(x))
         return x
 
 net = Net()
@@ -122,7 +111,7 @@ def train_model():
 
     for epoch in range(num_epochs):
         running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
+        for i, data in enumerate(train_loader, 0):
             inputs, labels = data
             optimizer.zero_grad()
             outputs = net(inputs)
@@ -131,7 +120,7 @@ def train_model():
             optimizer.step()
             running_loss += loss.item()
 
-        training_losses.append(running_loss / len(trainloader))
+        training_losses.append(running_loss / train_size)
         print(f"Epoch {epoch + 1}, Training loss: {training_losses[-1]}")
 
     torch.save(net.state_dict(), "model.pth")
@@ -143,7 +132,7 @@ def evaluate_model():
     total = 0
 
     with torch.no_grad():
-        for data in testloader:
+        for data in test_loader:
             images, labels = data
             outputs = net(images)
             _, predicted = torch.max(outputs.data, 1)
@@ -158,7 +147,7 @@ try:
     # Test the model
     net.load_state_dict(torch.load('model.pth', map_location="cpu"))
     # net.to(device)
-    print("Model Loaded from './model_training.pth'")
+    print("Model Loaded from './model.pth'")
     evaluate_model()
 except Exception as e: 
     print(e)
