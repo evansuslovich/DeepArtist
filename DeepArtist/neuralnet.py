@@ -1,25 +1,32 @@
-import torch
-import torchvision
-import torchvision.transforms.v2 as transforms
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
+import os
+from collections import OrderedDict
+from tqdm import tqdm
+
 import numpy as np
 from matplotlib import pyplot as plt
 from preprocess import ImageDataManager
 
-if torch.backends.mps.is_available():
-    device=torch.device("mps")
-elif torch.cuda.is_available():
-    device=torch.device("cuda")
-else:
-    device=torch.device("cpu")
-
-print("Device:", device)
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
 
+MODEL_STATE_DICT_FILE = 'model.pth'
 BATCH_SIZE = 64
 SQUARE_IMAGE_SIZE = 100
+TRAINING_EPOCHS = 3
+
+
+if torch.backends.mps.is_available():
+    device=torch.device('mps')
+elif torch.cuda.is_available():
+    device=torch.device('cuda')
+else:
+    device=torch.device('cpu')
+
+print(f'Usinge device: {device}')
+
+
 
 idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
 
@@ -31,69 +38,123 @@ idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
 
 print(f"SIZES: (train={train_size}, validate={validate_size}, test={test_size})")
 
-class Net(nn.Module):
 
-    def __init__(self):
+
+class Net(nn.Module):
+    
+    def __init__(self, kernel_size=3):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
-        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
-        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
-        self.conv4 = nn.Conv2d(64, 128, 3, padding=1)
-        self.conv5 = nn.Conv2d(128, 256, 3, padding=1)
+
+        # Initialize the convolutional kernel size and padding.
+        self.kernel_size = kernel_size
+        self.padding_size = self.kernel_size // 2
+
+        # Create reusable components.
         self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(256 * 3 * 3, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 5)
-        self.relu = nn.ReLU()
+        self.inner_activation = nn.ReLU()
         self.final_activation = nn.LogSoftmax(dim=1)
 
-    def forward(self, x):
-        x = self.pool(self.relu(self.conv1(x)))
-        x = self.pool(self.relu(self.conv2(x)))
-        x = self.pool(self.relu(self.conv3(x)))
-        x = self.pool(self.relu(self.conv4(x)))
-        x = self.pool(self.relu(self.conv5(x)))
-        x = x.view(-1, 256 * 3 * 3)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.final_activation(self.fc3(x))
-        return x
+        # Assemble the two main sections of the network.
+        self.build_convolutional_layers()
+        self.build_flat_layers()
 
-net = Net()
+
+    def build_convolutional_layers(self):
+        self.convolution_model = nn.Sequential(OrderedDict([
+
+            ('conv1',             nn.Conv2d(3, 16, self.kernel_size, padding=self.padding_size)),
+            ('inner_activation1', self.inner_activation),
+            ('pool1',             self.pool),
+
+            ('conv2',             nn.Conv2d(16, 32, self.kernel_size, padding=self.padding_size)),
+            ('inner_activation2', self.inner_activation),
+            ('pool2',             self.pool),
+
+            ('conv3',             nn.Conv2d(32, 64, self.kernel_size, padding=self.padding_size)),
+            ('inner_activation3', self.inner_activation),
+            ('pool3',             self.pool),
+
+            ('conv4',             nn.Conv2d(64, 128, self.kernel_size, padding=self.padding_size)),
+            ('inner_activation4', self.inner_activation),
+            ('pool4',             self.pool),
+
+            ('conv5',             nn.Conv2d(128, 256, self.kernel_size, padding=self.padding_size)),
+            ('inner_activation5', self.inner_activation),
+            ('pool5',             self.pool),
+        ]))
+
+    def build_flat_layers(self):
+
+        # The flat part of the model consists of three linear layers.
+        self.flat_model = nn.Sequential(OrderedDict([
+            
+            ('linear1',           nn.Linear(2304, 512)),
+            ('inner_activation1', self.inner_activation),
+
+            ('linear2',           nn.Linear(512, 256)),
+            ('inner_activation2', self.inner_activation),
+
+            ('linear3',           nn.Linear(256, 5)),
+            ('final_activation3', self.final_activation)
+        ]))
+    
+
+    def forward(self, x):
+
+        # Perform a pass through the convolitional layers, then flatten the data, then pass through
+        # the flat layers.
+        x = self.convolution_model(x)
+        x = x.view(-1, 256 * 3 * 3)
+        x = self.flat_model(x)
+        
+        # Yield the result after having passed through the entire model.
+        return x
+    
+
+
+
+net = Net(kernel_size=3)
 net = net.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
-num_epochs = 10
 losses = []
 
-for epoch in range(num_epochs):
-    print("EPOCH:", epoch)
-    running_loss = 0.0
-    for i, data in enumerate(train_loader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        optimizer.zero_grad()
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
+if os.path.isfile(MODEL_STATE_DICT_FILE):
+    print(f'Found model state dictionary "{MODEL_STATE_DICT_FILE}", skipping training.')
+else:
+    print(f'Training and saving state dictionary into "{MODEL_STATE_DICT_FILE}".')
 
-    epoch_loss = running_loss / len(train_loader)
-    print(f"Epoch {epoch + 1}, Training loss: {epoch_loss}")
-    losses.append(epoch_loss) 
+    net.train()
+
+    for epoch in range(TRAINING_EPOCHS):
+        print("EPOCH: ", epoch)
+        running_loss = 0.0
+        for data in tqdm(train_loader):
+            inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+
+        epoch_loss = running_loss / len(train_loader)
+        print(f"Epoch {epoch + 1}, Training loss: {epoch_loss}")
+        losses.append(epoch_loss) 
 
 
 
-print('Finished Training')
-torch.save(net.state_dict(), "model_letsgooo.pth")
+    print('Finished Training')
+    torch.save(net.state_dict(), MODEL_STATE_DICT_FILE)
 
 
 # Test the model
-net.load_state_dict(torch.load('model_letsgooo.pth', map_location="cpu"))
+net.load_state_dict(torch.load(MODEL_STATE_DICT_FILE, map_location="cpu"))
+
 net.to(device)
 
 correct=[]
@@ -113,7 +174,7 @@ print('Accuracy of the network on the test images: %d %%' % (100 * accuracy / te
 plt.style.use('dark_background')
 
 loss_plot_fig, loss_plot_ax = plt.subplots()
-loss_plot_x = torch.arange(0, num_epochs, 1)
+loss_plot_x = torch.arange(0, TRAINING_EPOCHS, 1)
 loss_plot_ax.plot(loss_plot_x, losses, c='blue')
 loss_plot_ax.set(title='Cross-Entropy Loss By Epoch', xlabel='Epoch', ylabel='Cross-Entropy Loss')
 loss_plot_fig.savefig(f'loss_by_epoch.png')
