@@ -10,23 +10,19 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-
-MODEL_STATE_DICT_FILE = 'model.pth'
+MODEL_STATE_DICT_FILE = 'model3.pth'
 BATCH_SIZE = 64
 SQUARE_IMAGE_SIZE = 100
-TRAINING_EPOCHS = 3
-
+TRAINING_EPOCHS = 10
 
 if torch.backends.mps.is_available():
-    device=torch.device('mps')
+    device = torch.device('mps')
 elif torch.cuda.is_available():
-    device=torch.device('cuda')
+    device = torch.device('cuda')
 else:
-    device=torch.device('cpu')
+    device = torch.device('cpu')
 
-print(f'Usinge device: {device}')
-
-
+print(f'Using device: {device}')
 
 idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
 
@@ -39,9 +35,8 @@ idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
 print(f"SIZES: (train={train_size}, validate={validate_size}, test={test_size})")
 
 
-
 class Net(nn.Module):
-    
+
     def __init__(self, kernel_size=3):
         super(Net, self).__init__()
 
@@ -58,59 +53,55 @@ class Net(nn.Module):
         self.build_convolutional_layers()
         self.build_flat_layers()
 
-
     def build_convolutional_layers(self):
         self.convolution_model = nn.Sequential(OrderedDict([
 
-            ('conv1',             nn.Conv2d(3, 16, self.kernel_size, padding=self.padding_size)),
+            ('conv1', nn.Conv2d(3, 16, self.kernel_size, padding=self.padding_size)),
             ('inner_activation1', self.inner_activation),
-            ('pool1',             self.pool),
+            ('pool1', self.pool),
 
-            ('conv2',             nn.Conv2d(16, 32, self.kernel_size, padding=self.padding_size)),
+            ('conv2', nn.Conv2d(16, 32, self.kernel_size, padding=self.padding_size)),
             ('inner_activation2', self.inner_activation),
-            ('pool2',             self.pool),
+            ('pool2', self.pool),
 
-            ('conv3',             nn.Conv2d(32, 64, self.kernel_size, padding=self.padding_size)),
+            ('conv3', nn.Conv2d(32, 64, self.kernel_size, padding=self.padding_size)),
             ('inner_activation3', self.inner_activation),
-            ('pool3',             self.pool),
+            ('pool3', self.pool),
 
-            ('conv4',             nn.Conv2d(64, 128, self.kernel_size, padding=self.padding_size)),
+            ('conv4', nn.Conv2d(64, 128, self.kernel_size, padding=self.padding_size)),
             ('inner_activation4', self.inner_activation),
-            ('pool4',             self.pool),
+            ('pool4', self.pool),
 
-            ('conv5',             nn.Conv2d(128, 256, self.kernel_size, padding=self.padding_size)),
-            ('inner_activation5', self.inner_activation),
-            ('pool5',             self.pool),
+            # Remove the last CNN layer
+            # ('conv5', nn.Conv2d(128, 256, self.kernel_size, padding=self.padding_size)),
+            # ('inner_activation5', self.inner_activation),
+            # ('pool5', self.pool),
         ]))
 
     def build_flat_layers(self):
-
         # The flat part of the model consists of three linear layers.
         self.flat_model = nn.Sequential(OrderedDict([
-            
-            ('linear1',           nn.Linear(2304, 512)),
+
+            # Adjust the input size based on the removed CNN layer
+            ('linear1', nn.Linear(128 * 6 * 6, 512)),
             ('inner_activation1', self.inner_activation),
 
-            ('linear2',           nn.Linear(512, 256)),
+            ('linear2', nn.Linear(512, 256)),
             ('inner_activation2', self.inner_activation),
 
-            ('linear3',           nn.Linear(256, 5)),
+            ('linear3', nn.Linear(256, 5)),
             ('final_activation3', self.final_activation)
         ]))
-    
 
     def forward(self, x):
-
-        # Perform a pass through the convolitional layers, then flatten the data, then pass through
+        # Perform a pass through the convolutional layers, then flatten the data, then pass through
         # the flat layers.
         x = self.convolution_model(x)
-        x = x.view(-1, 256 * 3 * 3)
+        x = x.view(-1, 128 * 6 * 6)  # Adjusted input size based on the removed CNN layer
         x = self.flat_model(x)
-        
+
         # Yield the result after having passed through the entire model.
         return x
-    
-
 
 
 net = Net(kernel_size=3)
@@ -119,8 +110,23 @@ net = net.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
-
 losses = []
+
+def train():
+    correct = []
+
+    net.eval()
+    accuracy = 0
+    for inputs, labels in test_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        outputs = net(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        accuracy += (predicted == labels).sum().item()
+        correct.append((predicted == labels).tolist())
+
+    print('Accuracy of the network on the test images: %d %%' % (100 * accuracy / test_size))
+
+
 
 if os.path.isfile(MODEL_STATE_DICT_FILE):
     print(f'Found model state dictionary "{MODEL_STATE_DICT_FILE}", skipping training.')
@@ -142,34 +148,31 @@ else:
             optimizer.step()
             running_loss += loss.item()
 
+        train()
+
         epoch_loss = running_loss / len(train_loader)
         print(f"Epoch {epoch + 1}, Training loss: {epoch_loss}")
-        losses.append(epoch_loss) 
-
-
+        losses.append(epoch_loss)
 
     print('Finished Training')
     torch.save(net.state_dict(), MODEL_STATE_DICT_FILE)
 
-
 # Test the model
 net.load_state_dict(torch.load(MODEL_STATE_DICT_FILE, map_location="cpu"))
-
 net.to(device)
 
-correct=[]
+correct = []
 
 net.eval()
 accuracy = 0
 for inputs, labels in test_loader:
-	inputs, labels = inputs.to(device), labels.to(device)
-	outputs = net(inputs)
-	_, predicted = torch.max(outputs.data, 1)
-	accuracy += (predicted == labels).sum().item()
-	correct.append((predicted == labels).tolist())
+    inputs, labels = inputs.to(device), labels.to(device)
+    outputs = net(inputs)
+    _, predicted = torch.max(outputs.data, 1)
+    accuracy += (predicted == labels).sum().item()
+    correct.append((predicted == labels).tolist())
 
 print('Accuracy of the network on the test images: %d %%' % (100 * accuracy / test_size))
-
 
 plt.style.use('dark_background')
 
