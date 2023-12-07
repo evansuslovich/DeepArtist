@@ -36,7 +36,7 @@ class ImageDataManager(object):
     def __init__(self,
                  data_root: str='./Data',
                  square_image_size: int=100) -> None:
-        
+
         super().__init__()
 
         self._data_root = data_root
@@ -51,7 +51,7 @@ class ImageDataManager(object):
         ])
 
         self._dataset = ImageFolder(root=self._data_root, transform=self._transform)
-    
+
 
     def label_map(self):
         return self._dataset.classes

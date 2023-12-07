@@ -63,10 +63,10 @@ net = Net()
 net = net.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.0005)
+optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 
-num_epochs = 15
+num_epochs = 10
 losses = []
 
 for epoch in range(num_epochs):
@@ -108,3 +108,14 @@ for inputs, labels in test_loader:
 	correct.append((predicted == labels).tolist())
 
 print('Accuracy of the network on the test images: %d %%' % (100 * accuracy / test_size))
+
+
+plt.style.use('dark_background')
+
+loss_plot_fig, loss_plot_ax = plt.subplots()
+loss_plot_x = torch.arange(0, num_epochs, 1)
+loss_plot_ax.plot(loss_plot_x, losses, c='blue')
+loss_plot_ax.set(title='Cross-Entropy Loss By Epoch', xlabel='Epoch', ylabel='Cross-Entropy Loss')
+loss_plot_fig.savefig(f'loss_by_epoch.png')
+
+plt.show()
