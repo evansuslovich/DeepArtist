@@ -137,8 +137,6 @@ dmypy.json
 .vscode/*
 
 # Custom
-.idea
-
 */__pycache__/
 DeepArtistApp/backend/data/
 DeepArtistApp/backend/uploads/
