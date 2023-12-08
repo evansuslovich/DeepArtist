@@ -1,19 +1,19 @@
 import os
 from collections import OrderedDict
-from tqdm import tqdm
-
-import matplotlib.pyplot as plt
-from preprocess import ImageDataManager
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from preprocess import ImageDataManager
 
+CHART_OUTPUT_DIR = 'charts'
 MODEL_STATE_DICT_FILE = 'model.pth'
+
 BATCH_SIZE = 64
 SQUARE_IMAGE_SIZE = 100
 TRAINING_EPOCHS = 10
-DEBUG_PRINT_SIZE = False
+DEBUG_PRINT = False
 
 
 if torch.backends.mps.is_available():
@@ -46,7 +46,7 @@ class DebugPrintSize(nn.Module):
 
     def forward(self, x):
 
-        if DEBUG_PRINT_SIZE:
+        if DEBUG_PRINT:
             print(f'{self.label}: {x.size()}')
         
         return x
@@ -175,12 +175,16 @@ else:
     print('Finished Training')
     torch.save(net.state_dict(), MODEL_STATE_DICT_FILE)
 
-    plt.style.use('dark_background')
     loss_plot_fig, loss_plot_ax = plt.subplots()
     loss_plot_x = torch.arange(0, TRAINING_EPOCHS, 1)
     loss_plot_ax.plot(loss_plot_x, losses, c='blue')
     loss_plot_ax.set(title='Cross-Entropy Loss By Epoch', xlabel='Epoch', ylabel='Cross-Entropy Loss')
-    loss_plot_fig.savefig(f'loss_by_epoch.png')
+
+    plt.style.use('default')
+    loss_plot_fig.savefig(f'{CHART_OUTPUT_DIR}/loss_by_epoch_light.png')
+
+    plt.style.use('dark_background')
+    loss_plot_fig.savefig(f'{CHART_OUTPUT_DIR}/loss_by_epoch_dark.png')
 
 
 # Test the model
