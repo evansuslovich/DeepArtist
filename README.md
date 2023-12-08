@@ -1,5 +1,7 @@
 # Artelligence
 Genre Classification
 
-DeepArtist contains the model and training data.
-DeepArtistApp contains the web app. The web app uses the model in DeepArtist.
+DeepArtistApp contains the web app.
+DeepArtistApp/backend/DeepArtist contains the model and training data.
+
+The web app uses the model that is trained in DeepArtistApp/backend/DeepArtist.

@@ -27,8 +27,3 @@ yarn-error.log*
 package-lock.json
 frontend/package-lock.json
 
-
-__pycache__/
-data/
-model.pth
-
