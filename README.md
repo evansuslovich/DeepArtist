@@ -2,15 +2,10 @@
 Genre Classification
 
 DeepArtistApp contains the web app.
-DeepArtist contains the model and training data.
+DeepArtistApp/backend/deepartist contains the model and training data.
 
-The web app uses the model that is trained in DeepArtist.
+The web app uses the model that is trained in DeepArtistApp/backend/deepartist.
 
-
-**To install model custom package**
-cd DeepArtist
-
-python3 setup.py install
 
 **To run backend:**
 cd DeepArtistApp/backend

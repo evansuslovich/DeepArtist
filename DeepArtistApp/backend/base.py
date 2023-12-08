@@ -1,15 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import torch
-import torchvision
-import torchvision.transforms.v2 as transforms
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from PIL import Image
-from preprocess import ImageDataManager
-from deepartist.neuralnet import Model
+from deepartist.neuralnet import Model, MODEL_STATE_DICT_FILE
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +17,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 
 
 model = Model()
-
+model.load(MODEL_STATE_DICT_FILE)
 
 def allowed_file(filename):
     # Check if the file type is allowed
@@ -51,8 +44,7 @@ def upload_file():
 
         # Open and preprocess the image for prediction
         image = Image.open(filename)
-        image = image.unsqueeze(0)  # Add batch dimension
-        _, class_label = model.predict(image)
+        _, class_label = model.predict(image, single_image=True)
 
         return jsonify({'prediction': class_label})
     else:
