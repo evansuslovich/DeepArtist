@@ -5,10 +5,16 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from preprocess import ImageDataManager
+from deepartist.preprocess import ImageDataManager
+from importlib.resources import files
 
-CHART_OUTPUT_DIR = 'charts'
-MODEL_STATE_DICT_FILE = 'model.pth'
+PACKAGE_ROOT_DIR = files('deepartist')
+
+DATA_ROOT_DIR = str(PACKAGE_ROOT_DIR / 'data')
+
+print(DATA_ROOT_DIR)
+CHART_OUTPUT_DIR = str(PACKAGE_ROOT_DIR / 'charts')
+MODEL_STATE_DICT_FILE = str(PACKAGE_ROOT_DIR / 'model.pth')
 
 BATCH_SIZE = 64
 SQUARE_IMAGE_SIZE = 100
@@ -108,6 +114,7 @@ class Model(object):
 
         self.net = Net()
         self.device = self._init_device()
+        self.idm = ImageDataManager(data_root=DATA_ROOT_DIR, square_image_size=SQUARE_IMAGE_SIZE)
         self.data = self._init_data()
         self.net.to(self.device)
     
@@ -122,14 +129,11 @@ class Model(object):
             return torch.device('cpu')
     
     def _init_data(self):
-
-        idm = ImageDataManager(data_root='./Data', square_image_size=SQUARE_IMAGE_SIZE)
-
         (
             train_loader, train_size,
             validate_loader, validate_size,
             test_loader, test_size
-        ) = idm.split_loaders(train_split=0.8,
+        ) = self.idm.split_loaders(train_split=0.8,
                               validate_split=0.1,
                               batch_size=BATCH_SIZE,
                               random_seed=1)
@@ -209,6 +213,18 @@ class Model(object):
 
             plt.style.use('dark_background')
             loss_plot_fig.savefig(f'{CHART_OUTPUT_DIR}/loss_by_epoch_dark.png')
+
+    def predict(self, images):
+
+        images = self.idm.transform(images)
+
+        # Make prediction
+        with torch.no_grad():
+            outputs = self.net(images)
+            _, predicted = torch.max(outputs.data, 1)
+        
+        # Convert the predicted index to a class label
+        return predicted.item(), self.idm.label_map()[predicted.item()]
 
 
 
