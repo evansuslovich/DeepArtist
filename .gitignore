@@ -140,4 +140,3 @@ dmypy.json
 */__pycache__/
 DeepArtistApp/backend/data/
 DeepArtistApp/backend/uploads/
-model.pth
