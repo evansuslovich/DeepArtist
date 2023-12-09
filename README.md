@@ -1,5 +1,5 @@
-# Artelligence
-Genre Classification
+# DeepArtist
+Artist Classification
 
 DeepArtistApp contains the web app.
 DeepArtistApp/backend/deepartist contains the model and training data.
