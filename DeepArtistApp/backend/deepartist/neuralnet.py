@@ -233,7 +233,6 @@ class Model(object):
         return predicted.item(), self.idm.label_map()[predicted.item()]
 
 
-
 if __name__ == '__main__':
 
     model = Model()
