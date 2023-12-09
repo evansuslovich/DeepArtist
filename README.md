@@ -7,6 +7,11 @@ DeepArtistApp/backend/deepartist contains the model and training data.
 The web app uses the model that is trained in DeepArtistApp/backend/deepartist.
 
 
+**To train neural net**
+cd DeepArtistApp/backend/deepartist
+
+python3 neuralnet.py
+
 **To run backend:**
 cd DeepArtistApp/backend
 
